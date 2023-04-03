@@ -11,10 +11,8 @@ use Tests\TestCase;
 
 class ViewsTest extends TestCase
 {
-    public function setUp(): void
+    public function test_views()
     {
-        parent::setUp();
-
         ApiKeyService::set('test');
 
         Http::fake(function ($request) {
@@ -35,10 +33,7 @@ class ViewsTest extends TestCase
                 ]
             ], 200);
         });
-    }
 
-    public function test_views()
-    {
         $response = $this->get('/');
 
         $response->assertSuccessful();
