@@ -9,6 +9,15 @@
     <link rel="stylesheet" href="{{ asset('css/app.css') }}">
 </head>
 <body>
+<aside class="menu">
+    <ul class="menu-list">
+        <li>
+            <a href="{{ route('apikeys.create') }}">Api Key</a>
+            <a href="{{ route('subscribers.index') }}">All subscribers</a>
+            <a href="{{ route('subscribers.create') }}">Create subscriber</a>
+        </li>
+    </ul>
+</aside>
 <section class="section">
     <div class="container">
         @yield('content', '')

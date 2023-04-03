@@ -1,7 +1,7 @@
 <?php
 
 use App\Http\Controllers\ApiKeyController;
-use App\Http\Controllers\SubScriberController;
+use App\Http\Controllers\SubscriberController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -24,4 +24,4 @@ Route::prefix('apikeys')->name('apikeys.')->group(function () {
     Route::post('/store', [ApiKeyController::class, 'store'])->name('store');
 });
 
-Route::resource('subscribers', SubScriberController::class)->except(['show'])->middleware('apikey.present');
+Route::resource('subscribers', SubscriberController::class)->except(['show'])->middleware('apikey.present');
