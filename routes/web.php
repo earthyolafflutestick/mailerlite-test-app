@@ -1,5 +1,7 @@
 <?php
 
+use App\Http\Controllers\ApiKeyController;
+use App\Http\Controllers\SubScriberController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -13,6 +15,13 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
+Route::get('/', function() {
+    return view('home');
 });
+
+Route::prefix('apikeys')->group(function () {
+    Route::get('/create', [ApiKeyController::class, 'create'])->name('create');
+    Route::post('/store', [ApiKeyController::class, 'store'])->name('store');
+});
+
+Route::resource('subscribers', SubScriberController::class)->except(['show']);
