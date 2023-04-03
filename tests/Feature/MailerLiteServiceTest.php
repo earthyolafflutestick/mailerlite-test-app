@@ -4,6 +4,7 @@ namespace Tests\Feature;
 
 use App\MailerLite\Error;
 use App\MailerLite\Result;
+use App\MailerLite\ResultMeta;
 use App\MailerLite\Subscriber;
 use App\Services\MailerLiteService;
 use GuzzleHttp\Promise\RejectedPromise;
@@ -132,6 +133,7 @@ class MailerLiteServiceTest extends TestCase
                 'data' => [
                     'id' => 1,
                     'email' => 'test@test.com',
+                    'subscribed_at' => '2021-09-01 14:03:50',
                     'fields' => [
                         'name' => 'Willy',
                         'last_name' => 'Wonka',
@@ -145,6 +147,13 @@ class MailerLiteServiceTest extends TestCase
 
         $this->assertIsArray($response->data);
         $this->assertInstanceOf(Subscriber::class, $response->data[0]);
+        $this->assertEquals($response->data[0]->id, 1);
+        $this->assertEquals($response->data[0]->email, 'test@test.com');
+        $this->assertEquals($response->data[0]->subscribeDate, '2021-09-01');
+        $this->assertEquals($response->data[0]->subscribeTime, '14:03:50');
+        $this->assertEquals($response->data[0]->firstName, 'Willy');
+        $this->assertEquals($response->data[0]->lastName, 'Wonka');
+        $this->assertEquals($response->data[0]->country, 'Wonderland');
     }
 
     public function test_create_subscriber_returns_array_of_subscriber_object()
@@ -154,11 +163,16 @@ class MailerLiteServiceTest extends TestCase
                 'data' => [
                     'id' => 1,
                     'email' => 'test@test.com',
+                    'subscribed_at' => '2021-09-01 14:03:50',
                     'fields' => [
                         'name' => 'Willy',
                         'last_name' => 'Wonka',
                         'country' => 'Wonderland',
                     ]
+                ],
+                'meta' => [
+                    'prev_cursor' => 'prev',
+                    'next_cursor' => 'next',
                 ]
             ], 200);
         });
@@ -167,6 +181,9 @@ class MailerLiteServiceTest extends TestCase
 
         $this->assertIsArray($response->data);
         $this->assertInstanceOf(Subscriber::class, $response->data[0]);
+        $this->assertInstanceOf(ResultMeta::class, $response->meta);
+        $this->assertEquals($response->meta->prevCursor, 'prev');
+        $this->assertEquals($response->meta->nextCursor, 'next');
     }
 
     public function test_edit_subscriber_returns_array_of_subscriber_object()
@@ -176,6 +193,7 @@ class MailerLiteServiceTest extends TestCase
                 'data' => [
                     'id' => 1,
                     'email' => 'test@test.com',
+                    'subscribed_at' => '2021-09-01 14:03:50',
                     'fields' => [
                         'name' => 'Willy',
                         'last_name' => 'Wonka',

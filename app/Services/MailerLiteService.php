@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\MailerLite\Error;
 use App\MailerLite\Result;
+use App\MailerLite\ResultMeta;
 use App\MailerLite\Subscriber;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\Client\Response;
@@ -126,20 +127,31 @@ class MailerLiteService
         $messageId = "mailerlite.messages.{$response->status()}";
         $message = Lang::has($messageId) ? __($messageId) : __('mailerlite.messages.200');
 
-        $data = $response->object();
-        $data = isset($data->data) ? $data->data : [];
+        $object = $response->object();
+
+        $data = $object->data ?? [];
         $data = is_array($data) ? $data : [$data];
         $data = array_map(function ($entry) {
+            $subscribe_datetime = \DateTime::createFromFormat('Y-m-d H:i:s', $entry->subscribed_at);
+            $subscribe_date = $subscribe_datetime->format('Y-m-d');
+            $subscribe_time = $subscribe_datetime->format('H:i:s');
+
             return new Subscriber(
                 $entry->id,
                 $entry->email,
                 $entry->fields->name,
                 $entry->fields->last_name,
-                $entry->fields->country
+                $entry->fields->country,
+                $subscribe_date,
+                $subscribe_time
             );
         }, $data);
 
-        return new Result($message, $data);
+        $meta = isset($object->meta) ?
+            new ResultMeta($object->meta->prev_cursor, $object->meta->next_cursor) :
+            null;
+
+        return new Result($message, $data, $meta);
     }
 
     private function handleException(\Exception $e)
