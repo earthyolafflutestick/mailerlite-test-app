@@ -2,13 +2,20 @@
 
 namespace Tests\Feature;
 
+use App\Services\ApiKeyService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithoutMiddleware;
+use Illuminate\Support\Facades\DB;
 use Tests\TestCase;
 
 class ViewsTest extends TestCase
 {
-    use WithoutMiddleware;
+    public function setUp(): void
+    {
+        parent::setUp();
+
+        ApiKeyService::set('test');
+    }
 
     public function test_views()
     {
