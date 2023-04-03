@@ -3,10 +3,13 @@
 namespace Tests\Feature;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\WithoutMiddleware;
 use Tests\TestCase;
 
 class ViewsTest extends TestCase
 {
+    use WithoutMiddleware;
+
     public function test_views()
     {
         $response = $this->get('/');
