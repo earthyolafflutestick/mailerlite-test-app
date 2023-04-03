@@ -21,4 +21,6 @@ return [
         '504' => 'There was an error on our system. Please contact support',
     ],
 
+    'no_subscribers_found' => 'You don\'t have any subscribers.'
+
 ];

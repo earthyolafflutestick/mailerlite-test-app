@@ -142,8 +142,8 @@ return [
     */
 
     'custom' => [
-        'attribute-name' => [
-            'rule-name' => 'custom-message',
+        'per_page' => [
+            'in' => 'Invalid amount of items per page.',
         ],
     ],
 
