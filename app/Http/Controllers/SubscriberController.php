@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Http\Requests\SubscribersRequest;
 use App\MailerLite\Error;
 use App\Services\MailerLiteService;
 use Illuminate\Http\Request;
@@ -16,16 +15,25 @@ class SubscriberController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index(SubscribersRequest $request, MailerLiteService $mailerLiteService)
+    public function index(Request $request, MailerLiteService $mailerLiteService)
     {
-        $validated = $request->safe()->only(['per_page', 'cursor', 'search']);
+        $request->mergeIfMissing([
+            'per_page' => 10,
+            'cursor' => ''
+        ]);
+
+        $validated = $request->validate([
+            'per_page' => 'required|in:10,25,50',
+            'cursor' => 'present',
+        ]);
+
         $result = $mailerLiteService->getSubscribers($validated['per_page'], $validated['cursor']);
         $data = [
             'input' => $validated,
         ];
 
         if ($result instanceof Error) {
-            $data['error'] = $result->message;
+            $data['resultError'] = $result->message;
         } else {
             $data['result'] = $result;
         }
@@ -49,20 +57,49 @@ class SubscriberController extends Controller
      * @param \Illuminate\Http\Request $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(Request $request, MailerLiteService $mailerLiteService)
     {
-        //
+        $result = $mailerLiteService->createSubscriber(
+            $request->input('email'),
+            $request->input('name'),
+            $request->input('country')
+        );
+
+        if ($result instanceof Error) {
+            return redirect()
+                ->route('subscribers.create')
+                ->withInput()
+                ->withErrors([
+                    'result' => $result->message,
+                ]);
+        }
+
+        session()->flash('success', $result->message);
+
+        return redirect()->route('subscribers.index');
     }
 
     /**
-     * Display the specified resource.
+     * Search the specified resource.
      *
-     * @param int $id
      * @return \Illuminate\Http\Response
      */
-    public function show($id)
+    public function search(Request $request, MailerLiteService $mailerLiteService)
     {
-        //
+        $result = $mailerLiteService->searchSubscriber($request->input('email'));
+
+        if ($result instanceof Error) {
+            return redirect()
+                ->route('subscribers.index')
+                ->withInput()
+                ->withErrors([
+                    'result' => $result->message,
+                ]);
+        }
+
+        $data['result'] = $result;
+
+        return view('subscribers.show', $data);
     }
 
     /**
@@ -71,9 +108,22 @@ class SubscriberController extends Controller
      * @param int $id
      * @return \Illuminate\Http\Response
      */
-    public function edit($id)
+    public function edit(Request $request, MailerLiteService $mailerLiteService, $id)
     {
-        return view('subscribers.edit');
+        $result = $mailerLiteService->searchSubscriber($id);
+
+        if ($result instanceof Error) {
+            return redirect()
+                ->route('subscribers.index')
+                ->withInput()
+                ->withErrors([
+                    'result' => $result->message,
+                ]);
+        }
+
+        $data['result'] = $result;
+
+        return view('subscribers.edit', $data);
     }
 
     /**
@@ -83,9 +133,22 @@ class SubscriberController extends Controller
      * @param int $id
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, $id)
+    public function update(Request $request, MailerLiteService $mailerLiteService, $id)
     {
-        //
+        $result = $mailerLiteService->updateSubscriber($id, $request->input('name'), $request->input('country'));
+
+        if ($result instanceof Error) {
+            return redirect()
+                ->route('subscribers.edit')
+                ->withInput()
+                ->withErrors([
+                    'result' => $result->message,
+                ]);
+        }
+
+        session()->flash('success', $result->message);
+
+        return redirect()->route('subscribers.index');
     }
 
     /**
@@ -94,8 +157,20 @@ class SubscriberController extends Controller
      * @param int $id
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(Request $request, MailerLiteService $mailerLiteService, $id)
     {
-        //
+        $result = $mailerLiteService->deleteSubscriber($id);
+
+        if ($result instanceof Error) {
+            return redirect()
+                ->route('subscribers.index')
+                ->withErrors([
+                    'result' => $result->message,
+                ]);
+        }
+
+        session()->flash('success', $result->message);
+
+        return redirect()->route('subscribers.index');
     }
 }

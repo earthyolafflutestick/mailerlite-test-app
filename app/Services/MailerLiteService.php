@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Lang;
 class MailerLiteService
 {
     protected $apiKey;
-    protected $timeout = 5000;
+    protected $timeout = 5;
 
     public const BASE_URL = 'https://connect.mailerlite.com';
 
@@ -47,10 +47,10 @@ class MailerLiteService
         }
     }
 
-    public function searchSubscriber($email)
+    public function searchSubscriber($id_or_email)
     {
         try {
-            $response = $this->request()->get("/api/subscribers/{$email}");
+            $response = $this->request()->get("/api/subscribers/{$id_or_email}");
 
             return $this->mapResponse($response);
         } catch (ConnectionException $e) {
@@ -58,14 +58,13 @@ class MailerLiteService
         }
     }
 
-    public function createSubscriber($email, $firstName, $lastName, $country)
+    public function createSubscriber($email, $name, $country)
     {
         try {
             $response = $this->request()->withBody(json_encode([
                 'email' => $email,
                 'fields' => [
-                    'name' => $firstName,
-                    'last_name' => $lastName,
+                    'name' => $name,
                     'country' => $country,
                 ]
             ]), 'application/json')->post('/api/subscribers');
@@ -77,13 +76,12 @@ class MailerLiteService
 
     }
 
-    public function updateSubscriber($id, $firstName, $lastName, $country)
+    public function updateSubscriber($id, $name, $country)
     {
         try {
             $response = $this->request()->withBody(json_encode([
                 'fields' => [
-                    'name' => $firstName,
-                    'last_name' => $lastName,
+                    'name' => $name,
                     'country' => $country,
                 ]
             ]), 'application/json')->put("/api/subscribers/{$id}");
@@ -128,19 +126,17 @@ class MailerLiteService
         $message = Lang::has($messageId) ? __($messageId) : __('mailerlite.messages.200');
 
         $object = $response->object();
-
         $data = $object->data ?? [];
         $data = is_array($data) ? $data : [$data];
         $data = array_map(function ($entry) {
             $subscribe_datetime = \DateTime::createFromFormat('Y-m-d H:i:s', $entry->subscribed_at);
-            $subscribe_date = $subscribe_datetime->format('Y-m-d');
+            $subscribe_date = $subscribe_datetime->format('d-m-Y');
             $subscribe_time = $subscribe_datetime->format('H:i:s');
 
             return new Subscriber(
                 $entry->id,
                 $entry->email,
                 $entry->fields->name,
-                $entry->fields->last_name,
                 $entry->fields->country,
                 $subscribe_date,
                 $subscribe_time

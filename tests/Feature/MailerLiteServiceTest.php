@@ -74,7 +74,7 @@ class MailerLiteServiceTest extends TestCase
     {
         Http::fake();
 
-        $this->mailerLiteService->createSubscriber('test@test.com', 'Willy', 'Wonka', 'Wonderland');
+        $this->mailerLiteService->createSubscriber('test@test.com', 'Willy', 'Wonderland');
 
         Http::assertSent(function (Request $request) {
             $payload = json_decode($request->body(), true);
@@ -82,7 +82,6 @@ class MailerLiteServiceTest extends TestCase
             return Str::startsWith($request->url(), 'https://connect.mailerlite.com/api/subscribers') &&
                 data_get($payload, 'email') === 'test@test.com' &&
                 data_get($payload, 'fields.name') === 'Willy' &&
-                data_get($payload, 'fields.last_name') === 'Wonka' &&
                 data_get($payload, 'fields.country') === 'Wonderland' &&
                 $request->method() === 'POST';
         });
@@ -92,14 +91,13 @@ class MailerLiteServiceTest extends TestCase
     {
         Http::fake();
 
-        $this->mailerLiteService->updateSubscriber(1, 'Willy', 'Wonka', 'Wonderland');
+        $this->mailerLiteService->updateSubscriber(1, 'Willy Wonka', 'Wonderland');
 
         Http::assertSent(function (Request $request) {
             $payload = json_decode($request->body(), true);
 
             return $request->url() === 'https://connect.mailerlite.com/api/subscribers/1' &&
-                data_get($payload, 'fields.name') === 'Willy' &&
-                data_get($payload, 'fields.last_name') === 'Wonka' &&
+                data_get($payload, 'fields.name') === 'Willy Wonka' &&
                 data_get($payload, 'fields.country') === 'Wonderland' &&
                 $request->method() === 'PUT';
         });
@@ -135,8 +133,7 @@ class MailerLiteServiceTest extends TestCase
                     'email' => 'test@test.com',
                     'subscribed_at' => '2021-09-01 14:03:50',
                     'fields' => [
-                        'name' => 'Willy',
-                        'last_name' => 'Wonka',
+                        'name' => 'Willy Wonka',
                         'country' => 'Wonderland',
                     ]
                 ]
@@ -149,10 +146,9 @@ class MailerLiteServiceTest extends TestCase
         $this->assertInstanceOf(Subscriber::class, $response->data[0]);
         $this->assertEquals($response->data[0]->id, 1);
         $this->assertEquals($response->data[0]->email, 'test@test.com');
-        $this->assertEquals($response->data[0]->subscribeDate, '2021-09-01');
+        $this->assertEquals($response->data[0]->subscribeDate, '01-09-2021');
         $this->assertEquals($response->data[0]->subscribeTime, '14:03:50');
-        $this->assertEquals($response->data[0]->firstName, 'Willy');
-        $this->assertEquals($response->data[0]->lastName, 'Wonka');
+        $this->assertEquals($response->data[0]->name, 'Willy Wonka');
         $this->assertEquals($response->data[0]->country, 'Wonderland');
     }
 

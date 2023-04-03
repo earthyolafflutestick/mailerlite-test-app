@@ -28,6 +28,7 @@ class MailerLiteServiceProvider extends ServiceProvider
         $this->app->singleton(MailerLiteService::class, function ($app) {
             $mailerLiteService = new MailerLiteService();
             $mailerLiteService->setApiKey(ApiKeyService::get());
+            $mailerLiteService->setTimeout(5);
 
             return $mailerLiteService;
         });
